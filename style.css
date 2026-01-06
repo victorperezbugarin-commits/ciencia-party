@@ -1,0 +1,77 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* Fondo colorido */
+    color: white;
+    height: 100vh; /* Altura completa del móvil */
+    overflow: hidden; /* Evitar scroll innecesario */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Las pantallas del juego */
+.pantalla {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 0.3s ease;
+}
+
+.oculta {
+    display: none;
+}
+
+/* Títulos */
+h1 {
+    font-size: 3rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+/* Botones atractivos */
+button {
+    background: white;
+    color: #b21f1f;
+    border: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 15px 40px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.95); /* Efecto de pulsar */
+}
+
+.btn-peque {
+    padding: 10px 20px;
+    font-size: 1rem;
+    margin-top: 20px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid white;
+}

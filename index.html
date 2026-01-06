@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciencia Party</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="pantalla-inicio" class="pantalla activa">
+        <div class="contenedor-logo">
+            <h1>⚛️ CIENCIA<br>PARTY</h1>
+            <p>¿Podrás superar los retos del laboratorio?</p>
+        </div>
+        <button class="btn-grande" onclick="iniciarJuego()">JUGAR AHORA</button>
+    </div>
+
+    <div id="pantalla-juego" class="pantalla oculta">
+        <h2 id="titulo-prueba">Prueba 1</h2>
+        <div id="contenido-prueba">
+            <p>Cargando reactivos...</p>
+        </div>
+        <button class="btn-peque" onclick="volverInicio()">Salir</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
