@@ -1,75 +1,77 @@
-// ======================================================
-//  ZONA DEL PROFESOR: BASE DE DATOS
-// ======================================================
-
-const baseDeDatosPreguntas = [
-    {
-        categoria: "Química ⚗️",
-        pregunta: "¿Cuál es el símbolo químico del Oro?",
-        respuesta: "Au"
-    },
-    {
-        categoria: "Física 🚀",
-        pregunta: "Si soltamos una pluma y un martillo en la Luna, ¿cuál cae antes?",
-        respuesta: "Llegan a la vez (no hay aire)."
-    },
-    {
-        categoria: "Química ⚗️",
-        pregunta: "Un pH de 2 indica que una sustancia es...",
-        respuesta: "Muy ácida."
-    },
-    {
-        categoria: "Física 🚀",
-        pregunta: "¿Cuál es la unidad de fuerza en el SI?",
-        respuesta: "El Newton (N)"
-    },
-    {
-        categoria: "Cultura Científica 🧠",
-        pregunta: "¿Quién formuló la teoría de la relatividad?",
-        respuesta: "Albert Einstein"
-    }
-    // ¡AÑADE TUS PREGUNTAS ENCIMA DE ESTA LÍNEA! 
-    // Recuerda poner una coma , después de la llave de cierre } anterior.
+const datos = [
+    { t: "p", c: "Física", q: "¿Unidad de la fuerza?", a: "Newton (N)" },
+    { t: "d", c: "Dibujo", q: "Dibuja un termómetro", a: "Debe verse el bulbo y la escala" },
+    { t: "p", c: "Química", q: "¿Símbolo del Hierro?", a: "Fe" },
+    { t: "d", c: "Dibujo", q: "Dibuja una probeta", a: "Recipiente cilíndrico graduado" }
 ];
 
-
-// ======================================================
-//  LÓGICA DEL JUEGO (NO TOCAR)
-// ======================================================
-
-let preguntaActual = null;
+let itemActual = null;
+const canvas = document.getElementById('pizarra');
+const ctx = canvas.getContext('2d');
+let pintando = false;
 
 function iniciarJuego() {
-    // Escondemos inicio y mostramos juego
-    document.getElementById('pantalla-inicio').classList.add('oculta');
     document.getElementById('pantalla-inicio').classList.remove('activa');
-    
-    document.getElementById('pantalla-juego').classList.remove('oculta');
     document.getElementById('pantalla-juego').classList.add('activa');
     
-    cargarSiguientePrueba();
+    // Ajustar tamaño del lienzo al abrir
+    setTimeout(() => {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }, 100);
+    
+    cargarPrueba();
 }
 
-function cargarSiguientePrueba() {
-    // 1. Ocultar la respuesta anterior y mostrar el botón de ver solución
-    document.getElementById('area-respuesta').classList.add('oculta');
-    document.getElementById('btn-ver-solucion').classList.remove('oculta');
+function cargarPrueba() {
+    document.getElementById('respuesta-zona').classList.add('oculta');
+    document.getElementById('btn-accion').classList.remove('oculta');
+    limpiarPizarra();
 
-    // 2. Elegir pregunta al azar
-    const indice = Math.floor(Math.random() * baseDeDatosPreguntas.length);
-    preguntaActual = baseDeDatosPreguntas[indice];
+    itemActual = datos[Math.floor(Math.random() * datos.length)];
+    
+    document.getElementById('categoria').innerText = itemActual.c;
+    document.getElementById('pregunta').innerText = itemActual.q;
+    document.getElementById('texto-respuesta').innerText = itemActual.a;
 
-    // 3. Pintar en pantalla
-    document.getElementById('categoria-pregunta').innerText = preguntaActual.categoria;
-    document.getElementById('texto-pregunta').innerText = preguntaActual.pregunta;
-    document.getElementById('texto-solucion').innerText = preguntaActual.respuesta;
+    if(itemActual.t === "d") {
+        document.getElementById('bloque-dibujo').classList.remove('oculta');
+        document.getElementById('btn-accion').innerText = "✅ ¡Dibujado!";
+    } else {
+        document.getElementById('bloque-dibujo').classList.add('oculta');
+        document.getElementById('btn-accion').innerText = "👁️ Ver Solución";
+    }
 }
 
-function verSolucion() {
-    document.getElementById('btn-ver-solucion').classList.add('oculta');
-    document.getElementById('area-respuesta').classList.remove('oculta');
+function mostrarRespuesta() {
+    document.getElementById('btn-accion').classList.add('oculta');
+    document.getElementById('respuesta-zona').classList.remove('oculta');
 }
 
-function volverInicio() {
-    location.reload();
+// Lógica de dibujo ultra-simple
+function mousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
 }
+
+function empezar(e) { pintando = true; const pos = mousePos(e); ctx.moveTo(pos.x, pos.y); }
+function mover(e) { 
+    if(!pintando) return; 
+    const pos = mousePos(e); 
+    ctx.lineTo(pos.x, pos.y); 
+    ctx.strokeStyle = "#1a2a6c"; 
+    ctx.lineWidth = 3; 
+    ctx.stroke(); 
+}
+function terminar() { pintando = false; ctx.beginPath(); }
+
+canvas.addEventListener('mousedown', empezar);
+canvas.addEventListener('mousemove', mover);
+canvas.addEventListener('mouseup', terminar);
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); empezar(e); });
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); mover(e); });
+canvas.addEventListener('touchend', terminar);
+
+function limpiarPizarra() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
