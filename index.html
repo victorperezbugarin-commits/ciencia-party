@@ -5,55 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ciencia Party</title>
     <style>
-        /* TODO EL DISEÑO AQUÍ */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; touch-action: manipulation; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #1a2a6c; color: white; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        
         .pantalla { width: 90%; max-width: 400px; display: none; flex-direction: column; text-align: center; }
         .activa { display: flex !important; }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .tarjeta { background: white; color: #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #pizarra { background: white; border: 2px solid #fdbb2d; border-radius: 10px; width: 100%; height: 200px; touch-action: none; margin-bottom: 10px; }
-        .btn-principal { background: #fdbb2d; color: #1a2a6c; border: none; padding: 18px; border-radius: 50px; font-weight: bold; font-size: 1.2rem; cursor: pointer; width: 100%; margin-top: 10px; }
-        .caja-res { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px dashed white; }
+        
+        h1 { font-size: 2.2rem; margin-bottom: 10px; text-shadow: 2px 2px #000; }
+        .tarjeta { background: white; color: #333; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        /* Pizarra mejorada */
+        #zona-dibujo { width: 100%; background: #eee; border-radius: 10px; padding: 5px; margin-bottom: 10px; }
+        canvas { 
+            background: #ffffff; 
+            border: 2px solid #fdbb2d; 
+            border-radius: 5px; 
+            width: 100%; 
+            height: 250px; 
+            display: block;
+            touch-action: none; /* Bloquea el scroll para poder dibujar */
+        }
+        
+        .btn-principal { background: #fdbb2d; color: #1a2a6c; border: none; padding: 15px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 5px; }
         .oculto { display: none !important; }
+        .caja-res { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 4px solid #fdbb2d; }
     </style>
 </head>
 <body>
 
     <div id="p-inicio" class="pantalla activa">
         <h1>⚛️ CIENCIA PARTY</h1>
-        <p>Toca el botón para empezar</p>
+        <p>¿Listo para el laboratorio?</p>
         <button class="btn-principal" onclick="irAlJuego()">JUGAR AHORA</button>
     </div>
 
     <div id="p-juego" class="pantalla">
         <div class="tarjeta">
-            <small id="cat" style="color:red; text-transform:uppercase"></small>
-            <p id="preg" style="font-weight:bold; font-size:1.3rem; margin-top:10px"></p>
+            <small id="cat" style="color:#b21f1f; font-weight:bold"></small>
+            <p id="preg" style="font-size:1.2rem; margin-top:5px; font-weight:bold"></p>
         </div>
 
         <div id="zona-dibujo" class="oculto">
             <canvas id="pizarra"></canvas>
-            <button onclick="borrar()" style="margin-bottom:10px">Limpiar Dibujo</button>
+            <button onclick="borrarLienzo()" style="margin-top:5px; padding:5px">🗑️ Limpiar</button>
         </div>
 
-        <button id="btn-ver" class="btn-principal" onclick="ver()">Ver Solución</button>
+        <button id="btn-ver" class="btn-principal" onclick="verSolucion()">VER SOLUCIÓN</button>
 
         <div id="zona-res" class="oculto">
             <div class="caja-res">
                 <p id="res"></p>
             </div>
-            <button class="btn-principal" onclick="siguiente()">Siguiente Reto ➡️</button>
+            <button class="btn-principal" onclick="siguiente()">SIGUIENTE RETO ➡️</button>
         </div>
     </div>
 
     <script>
-        // TODO EL CEREBRO AQUÍ
         const lista = [
-            { t: "p", c: "Física", q: "¿Cuál es la unidad de la fuerza?", a: "El Newton (N)" },
-            { t: "d", c: "Dibujo", q: "Dibuja un átomo simple", a: "Debe tener núcleo y electrones" },
-            { t: "p", c: "Química", q: "¿Símbolo del Hierro?", a: "Fe" },
-            { t: "d", c: "Dibujo", q: "Dibuja una probeta", a: "Recipiente cilíndrico con marcas" }
+            { t: "d", c: "DIBUJO 🎨", q: "Dibuja una molécula de AGUA", a: "Un átomo de O (grande) y dos de H (pequeños)" },
+            { t: "p", c: "QUÍMICA ⚗️", q: "¿Cuál es el símbolo del Calcio?", a: "Ca" },
+            { t: "d", c: "DIBUJO 🎨", q: "Dibuja un MATRAZ ERLENMEYER", a: "Forma cónica con cuello cilíndrico" },
+            { t: "p", c: "FÍSICA 🚀", q: "¿La masa cambia en la Luna?", a: "No, la masa es constante. Cambia el peso." }
         ];
 
         let actual = null;
@@ -64,16 +76,18 @@
         function irAlJuego() {
             document.getElementById('p-inicio').classList.remove('activa');
             document.getElementById('p-juego').classList.add('activa');
-            // Ajuste de pizarra
+            
+            // Ajustar el canvas al tamaño real que tiene en pantalla
             canvas.width = canvas.offsetWidth;
-            canvas.height = 200;
+            canvas.height = canvas.offsetHeight;
+            
             siguiente();
         }
 
         function siguiente() {
             document.getElementById('zona-res').classList.add('oculto');
             document.getElementById('btn-ver').classList.remove('oculto');
-            borrar();
+            borrarLienzo();
 
             actual = lista[Math.floor(Math.random() * lista.length)];
             
@@ -88,41 +102,62 @@
             }
         }
 
-        function ver() {
+        function verSolucion() {
             document.getElementById('btn-ver').classList.add('oculto');
             document.getElementById('zona-res').classList.remove('oculto');
         }
 
-        function borrar() {
+        function borrarLienzo() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
+            ctx.strokeStyle = "#1a2a6c";
+            ctx.lineWidth = 4;
+            ctx.lineCap = "round";
         }
 
-        // DIBUJO SIMPLE
+        // LÓGICA DE DIBUJO ROBUSTA
         function obtenerPos(e) {
-            const r = canvas.getBoundingClientRect();
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: cx - r.left, y: cy - r.top };
+            const rect = canvas.getBoundingClientRect();
+            let x, y;
+            if (e.touches) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+            return { x, y };
         }
 
-        function iniciar(e) { pintando = true; const p = obtenerPos(e); ctx.moveTo(p.x, p.y); }
-        function mover(e) { 
-            if(!pintando) return; 
-            const p = obtenerPos(e); 
-            ctx.lineTo(p.x, p.y); 
-            ctx.strokeStyle = "#1a2a6c"; 
-            ctx.lineWidth = 3; 
-            ctx.stroke(); 
+        function empezar(e) {
+            pintando = true;
+            const pos = obtenerPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
         }
-        function fin() { pintando = false; ctx.beginPath(); }
 
-        canvas.addEventListener('mousedown', iniciar);
+        function mover(e) {
+            if (!pintando) return;
+            const pos = obtenerPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            e.preventDefault();
+        }
+
+        function parar() {
+            pintando = false;
+        }
+
+        // Eventos ratón
+        canvas.addEventListener('mousedown', empezar);
         canvas.addEventListener('mousemove', mover);
-        window.addEventListener('mouseup', fin);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); iniciar(e); });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); mover(e); });
-        canvas.addEventListener('touchend', fin);
+        window.addEventListener('mouseup', parar);
+
+        // Eventos táctiles
+        canvas.addEventListener('touchstart', empezar, {passive: false});
+        canvas.addEventListener('touchmove', mover, {passive: false});
+        canvas.addEventListener('touchend', parar);
+
     </script>
 </body>
 </html>
