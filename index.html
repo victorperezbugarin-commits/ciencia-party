@@ -18,11 +18,21 @@
     </div>
 
     <div id="pantalla-juego" class="pantalla oculta">
-        <h2 id="titulo-prueba">Prueba 1</h2>
-        <div id="contenido-prueba">
-            <p>Cargando reactivos...</p>
+        
+        <div id="tarjeta-pregunta">
+            <h3 id="categoria-pregunta">Categoría</h3>
+            <p id="texto-pregunta">Cargando pregunta...</p>
         </div>
-        <button class="btn-peque" onclick="volverInicio()">Salir</button>
+
+        <button id="btn-ver-solucion" class="btn-mediano" onclick="verSolucion()">👁️ Ver Solución</button>
+
+        <div id="area-respuesta" class="oculta">
+            <p class="solucion-titulo">Solución:</p>
+            <p id="texto-solucion">Aquí saldrá la respuesta...</p>
+            <button class="btn-siguiente" onclick="cargarSiguientePrueba()">➡️ Siguiente Pregunta</button>
+        </div>
+
+        <button class="btn-peque" onclick="volverInicio()">Salir al inicio</button>
     </div>
 
     <script src="script.js"></script>
