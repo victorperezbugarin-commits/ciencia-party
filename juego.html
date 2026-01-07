@@ -1,130 +1,127 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ciencia Party</title>
+    <title>Ciencia Party - Física y Química</title>
     <style>
-        body { background: #1a2a6c; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; }
-        .pantalla { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #pizarra { background: white; border: 5px solid #fdbb2d; touch-action: none; width: 100%; max-width: 350px; height: 300px; }
-        .btn { background: #fdbb2d; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; border: none; margin: 10px; color: #1a2a6c; font-size: 1.1rem; }
-        .oculto { display: none !important; }
-        .tarjeta { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 10px; width: 100%; max-width: 350px; }
+        :root { --azul: #1a2a6c; --oro: #fdbb2d; }
+        body { background: var(--azul); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; touch-action: none; }
+        
+        .contenedor { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .tarjeta { background: white; color: #333; padding: 20px; border-radius: 15px; width: 100%; max-width: 350px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        
+        canvas { background: #f0f0f0; border: 4px solid var(--oro); border-radius: 10px; cursor: crosshair; margin: 15px 0; touch-action: none; }
+        
+        .btn { background: var(--oro); color: var(--azul); padding: 15px 30px; border-radius: 50px; font-weight: bold; border: none; cursor: pointer; width: 100%; max-width: 300px; font-size: 1.1rem; margin-top: 10px; }
+        .oculto { display: none; }
+        .solucion-caja { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid var(--oro); }
     </style>
 </head>
 <body>
 
-    <div id="p-inicio" class="pantalla">
-        <h1>⚛️ CIENCIA PARTY</h1>
-        <p>Retos de Física y Química</p>
-        <button class="btn" onclick="irAlJuego()">JUGAR AHORA</button>
+    <div id="inicio" class="contenedor">
+        <h1 style="font-size: 2.5rem;">⚛️ CIENCIA<br>PARTY</h1>
+        <p>¿Podrás superar los retos del laboratorio?</p>
+        <button class="btn" onclick="comenzar()">EMPEZAR JUEGO</button>
     </div>
 
-    <div id="p-juego" class="pantalla oculto">
+    <div id="juego" class="contenedor oculto">
         <div class="tarjeta">
-            <p id="preg" style="font-weight:bold;"></p>
+            <h3 id="categoria" style="color: #b21f1f; font-size: 0.8rem; text-transform: uppercase;"></h3>
+            <p id="pregunta" style="font-size: 1.2rem; font-weight: bold; margin-top: 10px;"></p>
         </div>
 
-        <div id="zona-pizarra" class="oculto">
-            <canvas id="pizarra"></canvas>
-            <button style="color:white; background:none; border:none; text-decoration:underline;" onclick="borrar()">Limpiar dibujo</button>
-        </div>
+        <canvas id="pizarra" width="320" height="300"></canvas>
+        
+        <button id="btn-revisar" class="btn" onclick="revisar()">VER SOLUCIÓN</button>
 
-        <button id="btn-ver" class="btn" onclick="ver()">VER SOLUCIÓN</button>
-
-        <div id="zona-res" class="oculto">
-            <p id="res" style="background:white; color:#333; padding:10px; border-radius:10px;"></p>
-            <button class="btn" onclick="siguiente()">SIGUIENTE ➡️</button>
+        <div id="solucion" class="oculto" style="width: 100%; max-width: 350px;">
+            <div class="solucion-caja">
+                <p id="respuesta"></p>
+            </div>
+            <button class="btn" onclick="siguiente()">SIGUIENTE RETO ➡️</button>
         </div>
+        
+        <button onclick="limpiar()" style="background:none; border:none; color:white; text-decoration:underline; margin-top:15px; font-size:0.8rem;">Limpiar pizarra</button>
     </div>
 
     <script>
+        // BASE DE DATOS DE TUS APUNTES
         const lista = [
-            { t: "d", q: "Dibuja una probeta", a: "Recipiente cilíndrico graduado" },
-            { t: "p", q: "¿Cuál es el símbolo del Hierro?", a: "Fe" },
-            { t: "d", q: "Dibuja un átomo", a: "Núcleo y electrones" },
-            { t: "p", q: "¿Qué mide un termómetro?", a: "La temperatura" }
+            {cat: "Material de Laboratorio 🧪", q: "Dibuja un matraz Erlenmeyer", a: "Cuerpo cónico, cuello cilíndrico y base plana."},
+            {cat: "Estructura Atómica ⚛️", q: "¿Cuál es el símbolo del Potasio?", a: "Es la letra K."},
+            {cat: "Formulación ✍️", q: "Dibuja la molécula del agua (H2O)", a: "Un átomo de Oxígeno grande y dos de Hidrógeno más pequeños."},
+            {cat: "Leyes de la Física 🚀", q: "¿En qué unidad se mide la Fuerza?", a: "Se mide en Newtons (N)."},
+            {cat: "Electricidad ⚡", q: "Dibuja un circuito con una pila y una bombilla", a: "Debe ser un camino cerrado que conecte ambos polos."},
+            {cat: "Tabla Periódica ⚗️", q: "¿Qué elemento tiene el símbolo 'Fe'?", a: "El Hierro."},
+            {cat: "Cambios de Estado 🌡️", q: "Dibuja el paso de Líquido a Gas (Evaporación)", a: "Representa gotas convirtiéndose en nubes o vapor."},
+            {cat: "Modelos Atómicos 🔬", q: "Dibuja el modelo de Thomson (Pudin de pasas)", a: "Una esfera positiva con electrones negativos incrustados."}
         ];
-
-        let actual = null;
+        
         const canvas = document.getElementById('pizarra');
         const ctx = canvas.getContext('2d');
         let pintando = false;
 
-        function irAlJuego() {
-            document.getElementById('p-inicio').classList.add('oculto');
-            document.getElementById('p-juego').classList.remove('oculto');
-            
-            // Forzamos el tamaño del dibujo igual que en el test
-            setTimeout(() => {
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                siguiente();
-            }, 200);
+        function comenzar() {
+            document.getElementById('inicio').classList.add('oculto');
+            document.getElementById('juego').classList.remove('oculto');
+            siguiente();
         }
 
         function siguiente() {
-            document.getElementById('zona-res').classList.add('oculto');
-            document.getElementById('btn-ver').classList.remove('oculto');
-            borrar();
-
-            actual = lista[Math.floor(Math.random() * lista.length)];
-            document.getElementById('preg').innerText = actual.q;
-            document.getElementById('res').innerText = "Respuesta: " + actual.a;
-
-            if (actual.t === "d") {
-                document.getElementById('zona-pizarra').classList.remove('oculto');
-            } else {
-                document.getElementById('zona-pizarra').classList.add('oculto');
-            }
+            document.getElementById('solucion').classList.add('oculto');
+            document.getElementById('btn-revisar').classList.remove('oculto');
+            limpiar();
+            const r = lista[Math.floor(Math.random() * lista.length)];
+            document.getElementById('categoria').innerText = r.cat;
+            document.getElementById('pregunta').innerText = r.q;
+            document.getElementById('respuesta').innerText = "SOLUCIÓN: " + r.a;
         }
 
-        function ver() {
-            document.getElementById('btn-ver').classList.add('oculto');
-            document.getElementById('zona-res').classList.remove('oculto');
+        function revisar() {
+            document.getElementById('btn-revisar').classList.add('oculto');
+            document.getElementById('solucion').classList.remove('oculto');
         }
 
-        function borrar() {
+        function limpiar() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "blue";
-            ctx.lineWidth = 6;
+            ctx.strokeStyle = "#1a2a6c";
+            ctx.lineWidth = 4;
             ctx.lineCap = "round";
         }
 
-        // LÓGICA DE DIBUJO DEL TEST QUE FUNCIONÓ
-        function obtenerPos(e) {
-            const r = canvas.getBoundingClientRect();
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: cx - r.left, y: cy - r.top };
+        // LÓGICA DE DIBUJO (LA QUE FUNCIONA)
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            return {x, y};
         }
 
-        function iniciar(e) {
+        function start(e) {
             pintando = true;
-            const p = obtenerPos(e);
             ctx.beginPath();
+            const p = getPos(e);
             ctx.moveTo(p.x, p.y);
             if(e.touches) e.preventDefault();
         }
 
-        function mover(e) {
+        function move(e) {
             if (!pintando) return;
-            const p = obtenerPos(e);
+            const p = getPos(e);
             ctx.lineTo(p.x, p.y);
             ctx.stroke();
             if(e.touches) e.preventDefault();
         }
 
-        function fin() { pintando = false; }
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', () => pintando = false);
 
-        canvas.addEventListener('mousedown', iniciar);
-        canvas.addEventListener('mousemove', mover);
-        window.addEventListener('mouseup', fin);
-
-        canvas.addEventListener('touchstart', iniciar, {passive: false});
-        canvas.addEventListener('touchmove', mover, {passive: false});
-        canvas.addEventListener('touchend', fin);
+        canvas.addEventListener('touchstart', start, {passive: false});
+        canvas.addEventListener('touchmove', move, {passive: false});
+        canvas.addEventListener('touchend', () => pintando = false);
     </script>
 </body>
 </html>
