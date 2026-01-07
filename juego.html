@@ -3,157 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ciencia Party - Física y Química</title>
+    <title>Ciencia Party - Versión Blindada</title>
     <style>
-        :root { --azul: #1a2a6c; --rojo: #b21f1f; --amarillo: #fdbb2d; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
-        
-        body { background: var(--azul); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        
-        .pantalla { width: 100%; max-width: 450px; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        body { background: #1a2a6c; color: white; font-family: sans-serif; margin: 0; overflow: hidden; text-align: center; }
+        .pantalla { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
         .activa { display: flex !important; }
-
-        /* Estética de las Tarjetas */
-        .tarjeta { background: white; color: #333; padding: 20px; border-radius: 20px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 20px; position: relative; }
-        .badge { position: absolute; top: -10px; right: 10px; background: var(--rojo); color: white; padding: 5px 15px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; }
+        .tarjeta { background: white; color: #333; padding: 15px; border-radius: 15px; width: 95%; max-width: 400px; margin-bottom: 10px; }
         
-        /* Pizarra */
-        #pizarra { background: white; border: 4px solid var(--amarillo); border-radius: 15px; width: 100%; height: 280px; cursor: crosshair; }
+        /* Contenedor de dibujo muy simple para evitar errores */
+        #zona-dibujo { width: 95%; max-width: 400px; }
+        canvas { 
+            background: white; 
+            border: 5px solid #fdbb2d; 
+            border-radius: 10px; 
+            width: 100%; 
+            height: 300px; 
+            display: block;
+            touch-action: none; 
+        }
         
-        /* Botones */
-        .btn { background: var(--amarillo); color: var(--azul); border: none; padding: 18px 30px; border-radius: 50px; font-weight: bold; font-size: 1.2rem; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
-        .btn-secundario { background: rgba(255,255,255,0.2); color: white; border: 1px solid white; margin-top: 10px; padding: 10px; font-size: 0.9rem; }
-
+        .btn { background: #fdbb2d; color: #1a2a6c; border: none; padding: 15px; border-radius: 50px; font-weight: bold; width: 95%; max-width: 400px; font-size: 1.2rem; cursor: pointer; margin-top: 10px; }
         .oculto { display: none !important; }
-        .feedback { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; border-left: 5px solid var(--amarillo); width: 100%; }
+        #res-caja { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; margin-top: 10px; width: 95%; }
     </style>
 </head>
 <body>
 
     <div id="p-inicio" class="pantalla activa">
-        <h1 style="font-size: 3rem; line-height: 0.9; margin-bottom: 10px;">⚛️ CIENCIA<br><span style="color: var(--amarillo)">PARTY</span></h1>
-        <p style="margin-bottom: 30px; opacity: 0.8;">Repaso de Física y Química</p>
-        <button class="btn" onclick="iniciar()">¡EMPEZAR EL RETO!</button>
+        <h1>⚛️ CIENCIA PARTY</h1>
+        <button class="btn" onclick="iniciar()">JUGAR AHORA</button>
     </div>
 
     <div id="p-juego" class="pantalla">
         <div class="tarjeta">
-            <div id="tipo-badge" class="badge">RETO</div>
-            <p id="enunciado" style="font-size: 1.3rem; font-weight: bold;"></p>
+            <p id="preg" style="font-weight:bold; font-size:1.1rem"></p>
         </div>
 
-        <div id="zona-dibujo" class="oculto" style="width: 100%;">
+        <div id="zona-dibujo" class="oculto">
             <canvas id="pizarra"></canvas>
-            <button class="btn-secundario" onclick="limpiar()">🗑️ Borrar lienzo</button>
+            <button onclick="limpiar()" style="color:white; background:none; border:1px solid white; margin-top:5px; padding:5px; border-radius:5px;">🗑️ Borrar</button>
         </div>
 
-        <button id="btn-ver" class="btn" onclick="mostrarSolucion()">REVISAR RESPUESTA</button>
+        <button id="btn-ver" class="btn" onclick="ver()">VER RESPUESTA</button>
 
-        <div id="zona-res" class="oculto" style="width: 100%;">
-            <div class="feedback">
-                <small style="color: var(--amarillo)">SOLUCIÓN CORRECTA:</small>
-                <p id="solucion-texto" style="font-size: 1.1rem; margin-top: 5px;"></p>
+        <div id="zona-res" class="oculto">
+            <div id="res-caja">
+                <p id="res-texto"></p>
             </div>
-            <button class="btn" style="margin-top: 20px;" onclick="siguienteReto()">SIGUIENTE PRUEBA ➡️</button>
+            <button class="btn" onclick="siguiente()">SIGUIENTE RETO ➡️</button>
         </div>
     </div>
 
     <script>
-        // --- AQUÍ PUEDES AÑADIR TUS CONTENIDOS ---
-        // t: "p" es pregunta de texto, t: "d" es dibujo
-        const retos = [
-            { t: "p", q: "¿Cuál es el símbolo químico del Sodio?", a: "Na" },
-            { t: "d", q: "Dibuja un átomo según el modelo de Rutherford", a: "Núcleo central pequeño y electrones girando alrededor en órbitas." },
-            { t: "p", q: "¿Qué partícula tiene carga eléctrica negativa?", a: "El electrón" },
-            { t: "d", q: "Dibuja una molécula de Metano (CH4)", a: "Un átomo de Carbono en el centro unido a 4 de Hidrógeno." },
-            { t: "p", q: "¿En qué unidad se mide la intensidad de corriente?", a: "Amperios (A)" },
-            { t: "d", q: "Dibuja un circuito con una pila y dos bombillas en serie", a: "Los componentes deben estar en el mismo cable, uno tras otro." },
-            { t: "p", q: "Ley de Ohm: Si subo el voltaje y la resistencia es igual, ¿qué pasa con la intensidad?", a: "La intensidad aumenta (son proporcionales)." }
+        const lista = [
+            { t: "d", q: "Dibuja un matraz Erlenmeyer", a: "Cuerpo cónico y cuello cilíndrico" },
+            { t: "p", q: "¿Cuál es el símbolo del Potasio?", a: "K" },
+            { t: "d", q: "Dibuja un átomo (núcleo y electrones)", a: "El núcleo en el centro" },
+            { t: "p", q: "¿Cuál es la unidad de masa en el SI?", a: "El Kilogramo (kg)" }
         ];
 
-        let retoActual = null;
+        let actual = null;
         const canvas = document.getElementById('pizarra');
         const ctx = canvas.getContext('2d');
-        let dibujando = false;
+        let pintando = false;
 
         function iniciar() {
             document.getElementById('p-inicio').classList.remove('activa');
             document.getElementById('p-juego').classList.add('activa');
-            ajustarCanvas();
-            siguienteReto();
-        }
-
-        function ajustarCanvas() {
+            
+            // Ajustar el canvas al tamaño real visible
             canvas.width = canvas.offsetWidth;
-            canvas.height = 280;
-            ctx.strokeStyle = "#1a2a6c";
-            ctx.lineWidth = 4;
-            ctx.lineCap = "round";
+            canvas.height = canvas.offsetHeight;
+            
+            siguiente();
         }
 
-        function siguienteReto() {
+        function siguiente() {
             document.getElementById('zona-res').classList.add('oculto');
             document.getElementById('btn-ver').classList.remove('oculto');
             limpiar();
 
-            retoActual = retos[Math.floor(Math.random() * retos.length)];
-            
-            document.getElementById('enunciado').innerText = retoActual.q;
-            document.getElementById('solucion-texto').innerText = retoActual.a;
+            actual = lista[Math.floor(Math.random() * lista.length)];
+            document.getElementById('preg').innerText = actual.q;
+            document.getElementById('res-texto').innerText = "Solución: " + actual.a;
 
-            if (retoActual.t === "d") {
+            if (actual.t === "d") {
                 document.getElementById('zona-dibujo').classList.remove('oculto');
-                document.getElementById('tipo-badge').innerText = "DIBUJO 🎨";
-                document.getElementById('tipo-badge').style.background = "#2ed573";
             } else {
                 document.getElementById('zona-dibujo').classList.add('oculto');
-                document.getElementById('tipo-badge').innerText = "TEORÍA ⚗️";
-                document.getElementById('tipo-badge').style.background = "#b21f1f";
             }
         }
 
-        function mostrarSolucion() {
+        function ver() {
             document.getElementById('btn-ver').classList.add('oculto');
             document.getElementById('zona-res').classList.remove('oculto');
         }
 
         function limpiar() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Re-configurar estilo tras limpiar
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth = 5;
+            ctx.lineCap = "round";
         }
 
-        // --- LÓGICA DE DIBUJO ---
-        function pos(e) {
-            const r = canvas.getBoundingClientRect();
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: cx - r.left, y: cy - r.top };
+        // --- LÓGICA DE DIBUJO MATEMÁTICA ---
+        function obtenerPunto(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Esta parte detecta si es dedo o ratón
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            return {
+                x: clienteX - rect.left,
+                y: clienteY - rect.top
+            };
         }
 
-        function empezar(e) { 
-            dibujando = true; 
-            const p = pos(e); 
-            ctx.beginPath(); 
-            ctx.moveTo(p.x, p.y); 
+        function empezar(e) {
+            pintando = true;
+            const p = obtenerPunto(e);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            // Forzar color azul fuerte
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth = 5;
             if(e.touches) e.preventDefault();
         }
 
         function mover(e) {
-            if (!dibujando) return;
-            const p = pos(e);
+            if (!pintando) return;
+            const p = obtenerPunto(e);
             ctx.lineTo(p.x, p.y);
             ctx.stroke();
             if(e.touches) e.preventDefault();
         }
 
-        function parar() { dibujando = false; }
+        function terminar() {
+            pintando = false;
+        }
 
+        // Eventos
         canvas.addEventListener('mousedown', empezar);
         canvas.addEventListener('mousemove', mover);
-        window.addEventListener('mouseup', parar);
+        window.addEventListener('mouseup', terminar);
+
         canvas.addEventListener('touchstart', empezar, {passive: false});
         canvas.addEventListener('touchmove', mover, {passive: false});
-        canvas.addEventListener('touchend', parar);
+        canvas.addEventListener('touchend', terminar);
 
     </script>
 </body>
