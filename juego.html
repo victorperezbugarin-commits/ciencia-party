@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ciencia Party Test</title>
+    <style>
+        body { background: #1a2a6c; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; }
+        .pantalla { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #pizarra { background: white; border: 5px solid #fdbb2d; touch-action: none; width: 100%; max-width: 350px; height: 300px; }
+        .btn { background: #fdbb2d; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; border: none; margin: 10px; }
+        .oculto { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="p-inicio" class="pantalla">
+        <h1>⚛️ TEST DE DIBUJO</h1>
+        <button class="btn" onclick="probarCerebro()">1. PULSA AQUÍ PRIMERO</button>
+        <button id="btn-jugar" class="btn oculto" onclick="irAlJuego()">2. AHORA JUGAR</button>
+    </div>
+
+    <div id="p-juego" class="pantalla oculto">
+        <p>Intenta dibujar abajo:</p>
+        <canvas id="pizarra"></canvas>
+        <button class="btn" onclick="location.reload()">REINICIAR</button>
+    </div>
+
+    <script>
+        // PRUEBA DE VIDA
+        function probarCerebro() {
+            alert("¡El cerebro de la app funciona!");
+            document.getElementById('btn-jugar').classList.remove('oculto');
+        }
+
+        const canvas = document.getElementById('pizarra');
+        const ctx = canvas.getContext('2d');
+        let pintando = false;
+
+        function irAlJuego() {
+            document.getElementById('p-inicio').classList.add('oculto');
+            document.getElementById('p-juego').classList.remove('oculto');
+            
+            // Ajuste de tamaño
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Estilo de línea fijo
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth = 10;
+            ctx.lineCap = "round";
+        }
+
+        // DIBUJO PARA RATÓN
+        canvas.addEventListener('mousedown', (e) => { 
+            pintando = true; 
+            ctx.beginPath(); 
+            ctx.moveTo(e.offsetX, e.offsetY); 
+        });
+        canvas.addEventListener('mousemove', (e) => { 
+            if (pintando) { 
+                ctx.lineTo(e.offsetX, e.offsetY); 
+                ctx.stroke(); 
+            } 
+        });
+        window.addEventListener('mouseup', () => { pintando = false; });
+
+        // DIBUJO PARA MÓVIL
+        canvas.addEventListener('touchstart', (e) => {
+            pintando = true;
+            const t = e.touches[0];
+            const r = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(t.clientX - r.left, t.clientY - r.top);
+            e.preventDefault();
+        }, {passive: false});
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (pintando) {
+                const t = e.touches[0];
+                const r = canvas.getBoundingClientRect();
+                ctx.lineTo(t.clientX - r.left, t.clientY - r.top);
+                ctx.stroke();
+            }
+            e.preventDefault();
+        }, {passive: false});
+
+        canvas.addEventListener('touchend', () => { pintando = false; });
+    </script>
+</body>
+</html>
